@@ -70,18 +70,18 @@
 .project-row:hover{background:var(--bg2);}
 .project-row-title{font-size:.84rem;font-weight:600;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .project-row-client{font-size:.74rem;color:var(--ink4);width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.project-row-budget{font-size:.78rem;font-weight:600;color:var(--ink2);width:90px;flex-shrink:0;text-align:right;}
-.project-row-due{font-size:.72rem;color:var(--ink4);width:80px;flex-shrink:0;text-align:right;}
+.project-row-budget{font-size:.78rem;font-weight:600;color:var(--ink2);width:90px;flex-shrink:0;text-align:left;}
+.project-row-due{font-size:.72rem;color:var(--ink4);width:80px;flex-shrink:0;text-align:left;}
 .project-row-due.overdue{color:var(--red);font-weight:600;}
 .project-row-progress{width:80px;flex-shrink:0;}
 
 /* ══ KANBAN ══ */
-.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;}
-.kanban-col{min-width:0;}
-.kanban-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 4px;}
+.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;height:calc(100vh - 280px);min-height:400px;}
+.kanban-col{min-width:0;display:flex;flex-direction:column;height:100%;}
+.kanban-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 4px;flex-shrink:0;}
 .kanban-col-title{font-size:.74rem;font-weight:700;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;}
 .kanban-col-count{font-size:.68rem;color:var(--ink4);background:var(--bg3);padding:1px 7px;border-radius:999px;}
-.kanban-card{background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;margin-bottom:8px;}
+.kanban-card{background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:all .18s;display:flex;flex-direction:column;margin-bottom:8px;flex-shrink:0;}
 .kanban-card:hover{border-color:var(--accent-ln);box-shadow:var(--sh);transform:translateY(-1px);}
 .kanban-card-title{font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:4px;line-height:1.3;}
 .kanban-card-client{font-size:.7rem;color:var(--ink4);margin-bottom:8px;flex:1;}
@@ -127,8 +127,8 @@
 .detail-field{margin-bottom:10px;}
 .detail-field-label{font-size:.7rem;color:var(--ink4);margin-bottom:2px;display:flex;align-items:center;gap:4px;}
 .detail-field-label svg{width:10px;height:10px;}
-.detail-field-val{font-size:.84rem;color:var(--ink);font-weight:500;}
-.detail-field-val.editable{cursor:pointer;border-bottom:1px dashed transparent;transition:border-color .15s;}
+.detail-field-val{font-size:.84rem;color:var(--ink);font-weight:500;white-space:pre-wrap;word-break:break-word;}
+.detail-field-val.editable{cursor:pointer;border-bottom:1px dashed transparent;transition:border-color .15s;white-space:pre-wrap;word-break:break-word;}
 .detail-field-val.editable:hover{border-bottom-color:var(--accent);}
 .detail-progress-num{font-family:var(--serif);font-size:2.2rem;color:var(--ink);line-height:1;margin-bottom:6px;}
 .detail-progress-bar{height:6px;background:var(--line2);border-radius:3px;overflow:hidden;}
@@ -417,7 +417,8 @@
   .project-row-client,.project-row-budget,.project-row-progress{display:none;}
   #project-detail{width:100vw;max-width:100vw;}
   .projects-grid{grid-template-columns:1fr;}
-  .kanban-board{grid-template-columns:1fr 1fr;}
+  .kanban-board{grid-template-columns:1fr 1fr;height:auto;min-height:unset;}
+  .kanban-col{height:auto;max-height:60vh;}
   .filter-btn{padding:0 10px;font-size:.76rem;}
   .type-grid{grid-template-columns:1fr;}
   .wizard-modal{max-height:100vh;border-radius:0;}
@@ -1162,8 +1163,8 @@ function renderListView(projects){
       <div style="flex:1;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;">Project</div>
       <div style="width:130px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;">Client</div>
       <div style="width:80px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;">Status</div>
-      <div style="width:90px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;text-align:right;">Budget</div>
-      <div style="width:80px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;text-align:right;">Due</div>
+      <div style="width:90px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;">Budget</div>
+      <div style="width:80px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;">Due</div>
       <div style="width:80px;font-size:.68rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;">Progress</div>
     </div>
     ${projects.map(p=>{
@@ -1172,8 +1173,8 @@ function renderListView(projects){
         <div class="project-row-title">${ARK.escHtml(p.title)}${projectHasClientChanges(p)?'<span class="change-dot"></span>':''} ${typePillHtml(p.type)}</div>
         <div class="project-row-client">${ARK.escHtml(p.clientName||"—")}</div>
         <div>${badgeHtml(p.status)}</div>
-        <div class="project-row-budget">${p.budgetAmount>0?ARK.fmtCurrency(p.budgetAmount,p.currency)+(p.type==="hourly"?"/hr":p.type==="retainer"?"/mo":""):"—"}</div>
-        <div class="project-row-due ${isOver?"overdue":""}">${p.type==="retainer"?"—":due?due.toLocaleDateString(undefined,{month:"short",day:"numeric"}):"—"}</div>
+        <div class="project-row-budget" style="text-align:left;">${p.budgetAmount>0?ARK.fmtCurrency(p.budgetAmount,p.currency)+(p.type==="hourly"?"/hr":p.type==="retainer"?"/mo":""):"—"}</div>
+        <div class="project-row-due ${isOver?"overdue":""}" style="text-align:left;">${p.type==="retainer"?"—":due?due.toLocaleDateString(undefined,{month:"short",day:"numeric"}):"—"}</div>
         <div class="project-row-progress">${p.type==="retainer"?"—":`<div class="progress-bar" style="height:5px;"><div class="progress-fill" style="width:${p.progress||0}%"></div></div><div style="font-size:.65rem;color:var(--ink4);margin-top:2px;">${p.progress||0}%</div>`}</div>
       </div>`;
     }).join("")}
@@ -1185,7 +1186,7 @@ function renderKanbanView(projects){
   return`<div class="kanban-board">${cols.map(col=>{
     const cp=projects.filter(p=>p.status===col.key||p.status==="ended"&&col.key==="completed");
     return`<div class="kanban-col"><div class="kanban-col-header"><span class="kanban-col-title">${col.label}</span><span class="kanban-col-count">${cp.length}</span></div>
-    <div>${cp.map(p=>`<div class="kanban-card" onclick="openDetail('${p.id}')">
+    <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding:2px 2px 8px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent;">${cp.map(p=>`<div class="kanban-card" onclick="openDetail('${p.id}')">
       <div class="kanban-card-title">${ARK.escHtml(p.title)}${projectHasClientChanges(p)?'<span class="change-dot"></span>':''}</div>
       <div style="margin-bottom:6px;">${typePillHtml(p.type)}</div>
       <div class="kanban-card-client">${ARK.escHtml(p.clientName||"No client")}</div>
@@ -1298,7 +1299,10 @@ function closeDetail(){
   if(milestonesDirty)saveNow();
   document.getElementById("project-detail").classList.remove("open");
   document.getElementById("detail-overlay").classList.remove("open");
-  closeStatusDropdown();selectedProject=null;
+  closeStatusDropdown();
+  // Close any open view-all modals
+  ["modal-view-logs","modal-retainer-all"].forEach(id=>ARK.closeModal(id));
+  selectedProject=null;
 }
 
 function switchDetailTab(tab,el){
@@ -2251,6 +2255,10 @@ function closeWizard(){document.getElementById("wizard-overlay").classList.remov
   }else if(wizard.step===2){
     const isH=wizard.type==="hourly",isR=wizard.type==="retainer";
     body.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--line2);">
+        <div style="font-size:.7rem;color:var(--ink4);">Selected type</div>
+        ${typePillHtml(wizard.type)}
+      </div>
       <div class="field"><label class="field-label">${isR?"Contract title *":"Project title *"}</label><input class="field-input" type="text" id="w-title" value="${ARK.escHtml(wizard.data.title||"")}" placeholder="e.g. ${isR?"Social Media Management":"Airbnb Automation"}" autocomplete="off"><span id="err-w-title" style="font-size:.72rem;color:var(--red);display:none;margin-top:2px;">Required</span></div>
       <div class="field"><label class="field-label">Description <span style="font-weight:400;color:var(--ink4);">(max 70 words)</span></label><textarea class="field-input field-textarea" id="w-desc" rows="2" style="height:auto;padding:10px 12px;resize:vertical;" placeholder="Brief overview of the project scope…" oninput="updateWordCount('w-desc','w-desc-count')">${ARK.escHtml(wizard.data.desc||"")}</textarea><div class="word-counter" id="w-desc-count">0 / 70</div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
@@ -2266,6 +2274,10 @@ function closeWizard(){document.getElementById("wizard-overlay").classList.remov
     const isH=wizard.type==="hourly",isR=wizard.type==="retainer";
     const clientOpts=allClients.filter(c=>c.status==="active").map(c=>`<option value="${c.id}" ${wizard.data.clientId===c.id?"selected":""}>${ARK.escHtml(c.name)}${c.company?" · "+ARK.escHtml(c.company):""}</option>`).join("");
     body.innerHTML=`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--line2);">
+        <div style="font-size:.7rem;color:var(--ink4);">Selected type</div>
+        ${typePillHtml(wizard.type)}
+      </div>
       <div class="field"><label class="field-label">Client *</label><select class="field-input field-select" id="w-client"><option value="">Select client…</option>${clientOpts}</select><span id="err-w-client" style="font-size:.72rem;color:var(--red);display:none;margin-top:2px;">Required</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div class="field"><label class="field-label">${isH?"Hourly rate ($)":isR?"Monthly rate ($)":"Project budget ($)"}</label><input class="field-input" type="number" id="w-budget" value="${wizard.data.budget||""}" placeholder="e.g. ${isH?"75":isR?"2000":"5000"}"></div>
