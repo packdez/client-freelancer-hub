@@ -822,12 +822,28 @@
 
 <!-- ══ LOG TIME ══ -->
 <div class="modal-overlay" id="modal-log-time" onclick="if(event.target===this)ARK.closeModal('modal-log-time')">
-  <div class="modal" style="max-width:400px;">
+  <div class="modal" style="max-width:440px;">
     <div class="modal-header"><h2 class="modal-title">Log time</h2><button class="modal-close" onclick="ARK.closeModal('modal-log-time')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
     <div class="modal-body">
+      <!-- Mode toggle -->
+      <div style="display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px;margin-bottom:16px;">
+        <button id="log-mode-duration" onclick="setLogMode('duration')" style="flex:1;height:30px;border-radius:6px;border:none;cursor:pointer;font-size:.76rem;font-weight:600;font-family:var(--sans);background:var(--bg);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);transition:all .15s;">Duration</button>
+        <button id="log-mode-startend" onclick="setLogMode('startend')" style="flex:1;height:30px;border-radius:6px;border:none;cursor:pointer;font-size:.76rem;font-weight:600;font-family:var(--sans);background:none;color:var(--ink4);transition:all .15s;">Start & End</button>
+      </div>
       <div class="field"><label class="field-label">Date</label><input class="field-input" type="date" id="log-date"></div>
-      <div class="field"><label class="field-label">Hours worked</label><input class="field-input" type="number" id="log-hours" placeholder="e.g. 2.5" min="0.25" step="0.25"></div>
-      <div class="field"><label class="field-label">Description</label><textarea class="field-input field-textarea" id="log-desc" placeholder="What did you work on?" rows="3" style="height:auto;padding:10px 12px;resize:vertical;min-height:70px;"></textarea></div>
+      <!-- Duration mode -->
+      <div id="log-duration-fields">
+        <div class="field"><label class="field-label">Hours worked</label><input class="field-input" type="number" id="log-hours" placeholder="e.g. 2.5" min="0.25" step="0.25" oninput="updateLogDurationPreview()"></div>
+      </div>
+      <!-- Start & End mode -->
+      <div id="log-startend-fields" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field"><label class="field-label">Start time</label><input class="field-input" type="time" id="log-start-time" oninput="calcHoursFromTimes()"></div>
+          <div class="field"><label class="field-label">End time</label><input class="field-input" type="time" id="log-end-time" oninput="calcHoursFromTimes()"></div>
+        </div>
+        <div id="log-time-calc" style="display:none;padding:8px 10px;background:var(--accent-bg);border:1px solid var(--accent-ln);border-radius:var(--r);font-size:.76rem;color:var(--accent);font-weight:600;margin-bottom:14px;"></div>
+      </div>
+      <div class="field"><label class="field-label">Description</label><textarea class="field-input field-textarea" id="log-desc" placeholder="What did you work on?" rows="3" style="height:auto;padding:10px 12px;resize:vertical;min-height:70px;white-space:pre-wrap;"></textarea></div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="ARK.closeModal('modal-log-time')">Cancel</button>
@@ -850,11 +866,16 @@
       <div class="ss-item"><div class="ss-label">Avg / entry</div><div class="ss-val" id="vl-avg">—</div></div>
     </div>
     <div class="filter-bar">
-      <input type="text" class="filter-search" id="vl-search" placeholder="Search entries…" oninput="filterVlList()">
+      <input type="text" class="filter-search" id="vl-search" placeholder="Search entries…" oninput="filterVlList()" style="min-width:120px;max-width:160px;flex:none;">
       <button class="filter-pill active" data-vl="all" onclick="setVlPeriod('all',this)">All time</button>
       <button class="filter-pill" data-vl="month" onclick="setVlPeriod('month',this)">This month</button>
       <button class="filter-pill" data-vl="week" onclick="setVlPeriod('week',this)">This week</button>
-      <button class="filter-pill" data-vl="day" onclick="setVlPeriod('day',this)">Today</button>
+      <button class="filter-pill" data-vl="range" onclick="setVlPeriod('range',this)">Date range</button>
+      <div id="vl-range-wrap" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;">
+        <input type="date" id="vl-from" style="height:28px;background:var(--bg2);border:1.5px solid var(--line2);border-radius:var(--r);padding:0 8px;font-size:.74rem;color:var(--ink);font-family:var(--sans);outline:none;" onchange="filterVlList()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line2)'">
+        <span style="font-size:.74rem;color:var(--ink4);">→</span>
+        <input type="date" id="vl-to" style="height:28px;background:var(--bg2);border:1.5px solid var(--line2);border-radius:var(--r);padding:0 8px;font-size:.74rem;color:var(--ink);font-family:var(--sans);outline:none;" onchange="filterVlList()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line2)'">
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;padding:7px 16px;background:var(--bg2);border-bottom:1px solid var(--line2);flex-shrink:0;">
       <div style="font-size:.66rem;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;width:86px;flex-shrink:0;">Date</div>
@@ -908,6 +929,30 @@
   </div>
 </div>
 
+<!-- ══ DELIVERABLE REPORT ══ -->
+<div class="modal-overlay" id="modal-deliverable-report" onclick="if(event.target===this)ARK.closeModal('modal-deliverable-report')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Deliverable report</h2>
+      <button class="modal-close" onclick="ARK.closeModal('modal-deliverable-report')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="del-report-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="field"><label class="field-label">Date</label><input class="field-input" type="date" id="del-report-date"></div>
+        <div class="field"><label class="field-label">Report title *</label><input class="field-input" type="text" id="del-report-title" placeholder="e.g. Weekly sync, Sprint report…" autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('del-report-content').focus()"></div>
+      </div>
+      <div class="field"><label class="field-label">Report content <span style="font-weight:400;color:var(--ink4);">— what was delivered</span></label><textarea class="field-input field-textarea" id="del-report-content" rows="6" style="height:auto;padding:10px 12px;resize:vertical;min-height:140px;white-space:pre-wrap;line-height:1.6;" placeholder="Describe what was delivered, completed, or accomplished…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="ARK.closeModal('modal-deliverable-report')">Cancel</button>
+      <button class="btn-primary" onclick="saveDeliverableReport()">
+        <span class="btn-label">Save report</span><div class="btn-spin"></div>
+      </button>
+    </div>
+  </div>
+</div>
+  
 <!-- ══ EDIT PROJECT ══ -->
 <div class="modal-overlay" id="modal-edit-project" onclick="if(event.target===this)ARK.closeModal('modal-edit-project')">
   <div class="modal" style="max-width:540px;">
@@ -978,7 +1023,7 @@ function setBtnLoading(btn,on){if(!btn)return;if(on){btn.classList.add("btn-load
 // ── Type helpers ──
 function typeLabel(t){
   if(t==="hourly")return"Hourly";
-  if(t==="retainer")return"Contract";
+  if(t==="retainer")return"Retainer";
   return"One-off";
 }
 function typePillHtml(t){
@@ -1256,9 +1301,9 @@ async function openDetail(id){
 
   // Edit modal title: "Contract" for retainer
   const editTitle=document.getElementById("edit-modal-title");
-  if(editTitle)editTitle.textContent=isRetainer?"Edit contract":"Edit project";
+  if(editTitle)editTitle.textContent=isRetainer?"Edit retainer":"Edit project";
   const epTitleLabel=document.getElementById("ep-title-label");
-  if(epTitleLabel)epTitleLabel.textContent=isRetainer?"Contract title *":"Project title *";
+  if(epTitleLabel)epTitleLabel.textContent=isRetainer?"Retainer title *":"Project title *";
 
   document.getElementById("detail-progress-section").style.display=isMilestone?"":"none";
   if(isMilestone){
@@ -1669,9 +1714,48 @@ function renderTimeLogSummary(){
   if(grandEarned)grandEarned.textContent=rate>0?ARK.fmtCurrency(totalEarned,"USD"):"";
 }
 
+// ── Log time mode helpers ──
+let _logMode="duration";
+function setLogMode(mode){
+  _logMode=mode;
+  const isDur=mode==="duration";
+  document.getElementById("log-duration-fields").style.display=isDur?"":"none";
+  document.getElementById("log-startend-fields").style.display=isDur?"none":"";
+  const durBtn=document.getElementById("log-mode-duration");
+  const seBtn=document.getElementById("log-mode-startend");
+  if(durBtn){durBtn.style.background=isDur?"var(--bg)":"none";durBtn.style.color=isDur?"var(--ink)":"var(--ink4)";durBtn.style.boxShadow=isDur?"0 1px 3px rgba(0,0,0,.08)":"none";}
+  if(seBtn){seBtn.style.background=isDur?"none":"var(--bg)";seBtn.style.color=isDur?"var(--ink4)":"var(--ink)";seBtn.style.boxShadow=isDur?"none":"0 1px 3px rgba(0,0,0,.08)";}
+  if(!isDur){calcHoursFromTimes();}
+}
+function calcHoursFromTimes(){
+  const start=document.getElementById("log-start-time")?.value;
+  const end=document.getElementById("log-end-time")?.value;
+  const calc=document.getElementById("log-time-calc");
+  const hoursInput=document.getElementById("log-hours");
+  if(!start||!end){if(calc)calc.style.display="none";return;}
+  const [sh,sm]=start.split(":").map(Number);
+  const [eh,em]=end.split(":").map(Number);
+  let totalMins=(eh*60+em)-(sh*60+sm);
+  if(totalMins<=0)totalMins+=1440; // overnight
+  const hours=Math.round((totalMins/60)*100)/100;
+  // Store in the hours field so saveTimeLog can read it
+  if(hoursInput)hoursInput.value=hours;
+  if(calc){
+    const h=Math.floor(totalMins/60),m=totalMins%60;
+    calc.textContent=`${h}h${m>0?" "+m+"m":""} logged (${hours}h)`;
+    calc.style.display="";
+  }
+}
+function updateLogDurationPreview(){}
+  
 function openLogTimeModal(){
   document.getElementById("log-date").value=new Date().toISOString().slice(0,10);
-  document.getElementById("log-hours").value="";document.getElementById("log-desc").value="";
+  document.getElementById("log-hours").value="";
+  document.getElementById("log-desc").value="";
+  document.getElementById("log-start-time").value="";
+  document.getElementById("log-end-time").value="";
+  const calc=document.getElementById("log-time-calc");if(calc)calc.style.display="none";
+  setLogMode("duration");
   ARK.openModal("modal-log-time");
 }
 async function saveTimeLog(){
@@ -1707,7 +1791,14 @@ function openViewAllTimeLogs(){
   document.querySelectorAll("[data-vl]").forEach(b=>b.classList.toggle("active",b.dataset.vl==="all"));
   renderVlList();ARK.openModal("modal-view-logs");
 }
-function setVlPeriod(p,el){vlPeriod=p;document.querySelectorAll("[data-vl]").forEach(b=>b.classList.remove("active"));el.classList.add("active");renderVlList();}
+function setVlPeriod(p,el){
+  vlPeriod=p;
+  document.querySelectorAll("[data-vl]").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  const rangeWrap=document.getElementById("vl-range-wrap");
+  if(rangeWrap)rangeWrap.style.display=p==="range"?"flex":"none";
+  renderVlList();
+}
 function filterVlList(){vlSearch=document.getElementById("vl-search").value.toLowerCase();renderVlList();}
 function getVlFiltered(){
   const now=new Date();
@@ -1715,16 +1806,30 @@ function getVlFiltered(){
     if(vlSearch&&!l.description?.toLowerCase().includes(vlSearch)&&!l.date?.includes(vlSearch))return false;
     if(vlPeriod==="all")return true;
     const d=new Date(l.date);
-    if(vlPeriod==="day")return d.toDateString()===now.toDateString();
     if(vlPeriod==="week"){const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);return d>=mon;}
     if(vlPeriod==="month")return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    if(vlPeriod==="range"){
+      const from=document.getElementById("vl-from")?.value;
+      const to=document.getElementById("vl-to")?.value;
+      if(from&&d<new Date(from))return false;
+      if(to&&d>new Date(to+"T23:59:59"))return false;
+      return true;
+    }
     return true;
   });
 }
-function renderVlList(){
+
+  function renderVlList(){
   const rate=selectedProject?.budgetAmount||0;
   const wrap=document.getElementById("vl-list-wrap");
   const filtered=getVlFiltered();
+  // Update summary strip to reflect current filter
+  const fHours=filtered.reduce((s,l)=>s+l.hours,0);
+  const fEarned=rate*fHours;
+  document.getElementById("vl-total-hours").textContent=fHours.toFixed(1)+"h";
+  document.getElementById("vl-total-earned").textContent=rate>0?ARK.fmtCurrency(fEarned,"USD"):"—";
+  document.getElementById("vl-entries").textContent=filtered.length;
+  document.getElementById("vl-avg").textContent=filtered.length>0?(fHours/filtered.length).toFixed(1)+"h":"—";
   if(!filtered.length){wrap.innerHTML=`<div class="tl-empty">${vlSearch||vlPeriod!=="all"?"No entries match your filters.":"No time logs yet."}</div>`;return;}
   wrap.innerHTML=filtered.map((l,i)=>{
     const origIdx=timeLogs.indexOf(l);
@@ -1732,7 +1837,7 @@ function renderVlList(){
       <div class="time-log-row-full">
         <div class="tl-date">${new Date(l.date).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"})}</div>
         <div class="tl-hours">${l.hours}h</div>
-        <div class="tl-desc">${ARK.escHtml(l.description||"—")}</div>
+        <div class="tl-desc" style="white-space:pre-wrap;word-break:break-word;">${ARK.escHtml(l.description||"—")}</div>
         ${rate>0?`<div class="tl-earn">${ARK.fmtCurrency(l.hours*rate,"USD")}</div>`:""}
         <div class="tl-act">
           <button class="tl-btn" onclick="openTlEdit(${origIdx})" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -1792,12 +1897,15 @@ function renderRetainerSection(p){
   if(!shown.length){list.innerHTML=`<div style="text-align:center;padding:16px 0;font-size:.78rem;color:var(--ink4);">No deliverables yet. Add one above.</div>`;return;}
   list.innerHTML=shown.map(m=>{
     const mi=ms.indexOf(m);const isDone=m.status==="done"||m.approvalStatus==="approved";
-    return`<div class="deliverable-item" style="border-color:${isDone?"var(--accent-ln)":"var(--line2)"}">
-      <button class="deliverable-status ${isDone?"done":""}" onclick="toggleDeliverableStatus(event,${mi})"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-      <input style="font-size:.84rem;font-weight:600;color:${isDone?"var(--ink3)":"var(--ink)"};background:none;border:none;outline:none;font-family:var(--sans);flex:1;padding:0;border-bottom:1.5px solid transparent;transition:border-color .15s;" onfocus="this.style.borderBottomColor='var(--accent)'" onblur="this.style.borderBottomColor='transparent'" value="${ARK.escHtml(m.title)}" onchange="editMilestoneTitle(${mi},this.value)">
-      ${m.dueDate?`<span style="font-size:.7rem;color:var(--ink4);">${new Date(m.dueDate).toLocaleDateString(undefined,{month:"short",day:"numeric"})}</span>`:""}
-      ${m.approvalStatus==="approved"?`<span style="background:#dcfce7;color:#166534;font-size:.6rem;padding:2px 6px;border-radius:999px;font-weight:700;display:inline-flex;align-items:center;gap:2px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>`:""}
-      ${m.approvalStatus==="revision_requested"?`<span style="background:#f5f3ff;color:#7c3aed;font-size:.6rem;padding:2px 6px;border-radius:999px;font-weight:700;display:inline-flex;align-items:center;gap:2px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></span>`:""}
+    return`<div class="deliverable-item" style="border-color:var(--line2);cursor:default;" onclick="openDeliverableDetail(${mi})">
+      <div style="display:flex;flex-direction:column;flex:1;min-width:0;">
+        <div style="font-size:.84rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ARK.escHtml(m.title)}</div>
+        ${m.dueDate?`<div style="font-size:.7rem;color:var(--ink4);margin-top:2px;">${new Date(m.dueDate).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"})}</div>`:""}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        ${m.approvalStatus==="approved"?`<span style="background:#dcfce7;color:#166634;font-size:.6rem;padding:2px 6px;border-radius:999px;font-weight:700;">Approved</span>`:""}
+        <button class="ms-action-btn" style="opacity:1;" onclick="event.stopPropagation();deleteDeliverable(${mi})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+      </div>
     </div>`;
   }).join("");
   if(ms.length>7)list.innerHTML+=`<div style="padding:6px 0;font-size:.72rem;color:var(--ink4);text-align:center;">${ms.length-7} more — <span style="color:var(--accent);cursor:pointer;font-weight:600;" onclick="openRetainerViewAll()">View all ${ms.length}</span></div>`;
@@ -1846,6 +1954,17 @@ function addDeliverable(){
     }
   },30);
   saveNow();
+}
+
+
+function deleteDeliverable(mi){
+  if(!selectedProject)return;
+  selectedProject.milestones.splice(mi,1);
+  milestonesDirty=true;
+  renderRetainerSection(selectedProject);
+  updateRetainerOverviewStats(selectedProject);
+  saveNow();
+  ARK.showToast("Deliverable removed","success");
 }
 
 // ── Retainer View All ──
@@ -2176,14 +2295,14 @@ function editProject(){
   document.getElementById("ep-hours-field").style.display=isHourlyProject(p)?"":"none";
   document.getElementById("ep-hours").value=p.estimatedHours||"";
   document.getElementById("ep-budget-label").textContent=isHourlyProject(p)?"Hourly rate ($)":isRetainerProject(p)?"Monthly rate ($)":"Budget ($)";
-  document.getElementById("ep-due-label").textContent=isRetainerProject(p)?"Contract end date":"Due date";
+  document.getElementById("ep-due-label").textContent=isRetainerProject(p)?"Contract end":"Due date";
   document.getElementById("ep-retainer-fields").style.display=isRetainerProject(p)?"":"none";
   if(isRetainerProject(p)){
     document.getElementById("ep-work-hours").value=p.workHoursPerWeek||"";
     document.getElementById("ep-notice-period").value=p.noticePeriod||"";
   }
   // Update modal title
-  const mt=document.getElementById("edit-modal-title");if(mt)mt.textContent=isRetainerProject(p)?"Edit contract":"Edit project";
+  const mt=document.getElementById("edit-modal-title");if(mt)mt.textContent=isRetainerProject(p)?"Edit retainer":"Edit project";
   ARK.openModal("modal-edit-project");
 }
 async function saveEditProject(){
@@ -2248,7 +2367,7 @@ function closeWizard(){document.getElementById("wizard-overlay").classList.remov
       </div>
       <div class="type-card ${wizard.type==="retainer"?"selected":""}" onclick="selectType('retainer',this)">
         <div class="type-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg></div>
-        <div class="type-card-name">Contract</div>
+        <div class="type-card-name">Retainer</div>
         <div class="type-card-desc">Full-time or ongoing engagement. Monthly deliverables, consistent income, with start & end dates.</div>
       </div>
     </div>`;
@@ -2259,11 +2378,11 @@ function closeWizard(){document.getElementById("wizard-overlay").classList.remov
         <div style="font-size:.7rem;color:var(--ink4);">Selected type</div>
         ${typePillHtml(wizard.type)}
       </div>
-      <div class="field"><label class="field-label">${isR?"Contract title *":"Project title *"}</label><input class="field-input" type="text" id="w-title" value="${ARK.escHtml(wizard.data.title||"")}" placeholder="e.g. ${isR?"Social Media Management":"Airbnb Automation"}" autocomplete="off"><span id="err-w-title" style="font-size:.72rem;color:var(--red);display:none;margin-top:2px;">Required</span></div>
+      <div class="field"><label class="field-label">${isR?"Retainer title *":"Project title *"}</label><input class="field-input" type="text" id="w-title" value="${ARK.escHtml(wizard.data.title||"")}" placeholder="e.g. ${isR?"Social Media Management":"Airbnb Automation"}" autocomplete="off"><span id="err-w-title" style="font-size:.72rem;color:var(--red);display:none;margin-top:2px;">Required</span></div>
       <div class="field"><label class="field-label">Description <span style="font-weight:400;color:var(--ink4);">(max 70 words)</span></label><textarea class="field-input field-textarea" id="w-desc" rows="2" style="height:auto;padding:10px 12px;resize:vertical;" placeholder="Brief overview of the project scope…" oninput="updateWordCount('w-desc','w-desc-count')">${ARK.escHtml(wizard.data.desc||"")}</textarea><div class="word-counter" id="w-desc-count">0 / 70</div></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div class="field"><label class="field-label">Start date</label><input class="field-input" type="date" id="w-start" value="${wizard.data.start||""}"></div>
-        <div class="field"><label class="field-label">${isR?"Contract end date (optional)":"Due date"}</label><input class="field-input" type="date" id="w-due" value="${wizard.data.due||""}"></div>
+        <div class="field"><label class="field-label">${isR?"Contract end (optional)":"Due date"}</label><input class="field-input" type="date" id="w-due" value="${wizard.data.due||""}"></div>
       </div>
       ${isH?`<div class="field"><label class="field-label">Estimated hours</label><input class="field-input" type="number" id="w-hours" value="${wizard.data.hours||""}" placeholder="e.g. 40"></div>`:""}
       ${isR?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
@@ -2285,7 +2404,7 @@ function closeWizard(){document.getElementById("wizard-overlay").classList.remov
       </div>
       <div style="margin-top:4px;padding:12px;background:var(--bg2);border-radius:var(--r);border:1px solid var(--line2);">
         <div style="font-size:.73rem;color:var(--ink4);margin-bottom:4px;display:flex;align-items:center;gap:5px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Summary</div>
-        <div style="font-size:.82rem;color:var(--ink2);line-height:1.6;">${wizard.data.title||"Untitled"} · ${wizard.type==="hourly"?"Hourly":wizard.type==="retainer"?"Contract (ongoing)":"Fixed price"}${wizard.data.start?" · Starts "+ARK.fmtDate(wizard.data.start):""}${wizard.data.due?" · Due "+ARK.fmtDate(wizard.data.due):""}</div>
+        <div style="font-size:.82rem;color:var(--ink2);line-height:1.6;">${wizard.data.title||"Untitled"} · ${wizard.type==="hourly"?"Hourly":wizard.type==="retainer"?"Retainer (ongoing)":"Fixed price"}${wizard.data.start?" · Starts "+ARK.fmtDate(wizard.data.start):""}${wizard.data.due?" · Due "+ARK.fmtDate(wizard.data.due):""}</div>
       </div>`;
   }
 }
