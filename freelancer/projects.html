@@ -726,7 +726,7 @@
       <!-- Retainer deliverables -->
       <div class="detail-section" id="detail-retainer-section" style="display:none;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div class="detail-section-title" style="margin-bottom:0;">Recent deliverables</div>
+          <div class="detail-section-title" style="margin-bottom:0;">This week's reports</div>
           <div style="display:flex;gap:6px;">
             <button class="milestone-add-btn" onclick="openRetainerViewAll()" id="retainer-view-all-btn" style="display:none;">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>View all
@@ -898,32 +898,32 @@
 <div class="modal-overlay modal-xl" id="modal-retainer-all" onclick="if(event.target===this)ARK.closeModal('modal-retainer-all')">
   <div class="modal modal-xl" style="max-height:88vh;">
     <div class="modal-header">
-      <h2 class="modal-title">All Deliverables</h2>
+      <h2 class="modal-title">All Reports</h2>
       <button class="modal-close" onclick="ARK.closeModal('modal-retainer-all')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="summary-strip">
       <div class="ss-item"><div class="ss-label">Total</div><div class="ss-val" id="ra-total">0</div></div>
-      <div class="ss-item"><div class="ss-label">Completed</div><div class="ss-val green" id="ra-done">0</div></div>
-      <div class="ss-item"><div class="ss-label">Pending</div><div class="ss-val" id="ra-pending">0</div></div>
-      <div class="ss-item"><div class="ss-label">Approval needed</div><div class="ss-val" id="ra-approval">0</div></div>
+      <div class="ss-item"><div class="ss-label">This month</div><div class="ss-val green" id="ra-done">0</div></div>
+      <div class="ss-item"><div class="ss-label">This week</div><div class="ss-val" id="ra-pending">0</div></div>
+      <div class="ss-item"><div class="ss-label">Approved</div><div class="ss-val" id="ra-approval">0</div></div>
     </div>
     <div class="filter-bar">
-      <input type="text" class="filter-search" id="ra-search" placeholder="Search deliverables…" oninput="filterRaList()">
-      <button class="filter-pill active" data-rv="all" onclick="setRaStatusFilter('all',this)">All</button>
-      <button class="filter-pill" data-rv="pending" onclick="setRaStatusFilter('pending',this)">Pending</button>
-      <button class="filter-pill" data-rv="done" onclick="setRaStatusFilter('done',this)">Done</button>
-      <button class="filter-pill" data-rv="approved" onclick="setRaStatusFilter('approved',this)">Approved</button>
-    </div>
-    <div class="retainer-view-tabs">
-      <button class="rv-tab active" data-rv="month" onclick="switchRetainerView('month',this)">By Month</button>
-      <button class="rv-tab" data-rv="week" onclick="switchRetainerView('week',this)">By Week</button>
-      <button class="rv-tab" data-rv="day" onclick="switchRetainerView('day',this)">By Day</button>
+      <input type="text" class="filter-search" id="ra-search" placeholder="Search reports…" oninput="filterRaList()" style="min-width:120px;max-width:160px;flex:none;">
+      <button class="filter-pill active" data-ra-period="all" onclick="setRaPeriod('all',this)">All time</button>
+      <button class="filter-pill" data-ra-period="month" onclick="setRaPeriod('month',this)">This month</button>
+      <button class="filter-pill" data-ra-period="week" onclick="setRaPeriod('week',this)">This week</button>
+      <button class="filter-pill" data-ra-period="range" onclick="setRaPeriod('range',this)">Date range</button>
+      <div id="ra-range-wrap" style="display:none;align-items:center;gap:6px;flex-wrap:wrap;">
+        <input type="date" id="ra-from" style="height:28px;background:var(--bg2);border:1.5px solid var(--line2);border-radius:var(--r);padding:0 8px;font-size:.74rem;color:var(--ink);font-family:var(--sans);outline:none;" onchange="filterRaList()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line2)'">
+        <span style="font-size:.74rem;color:var(--ink4);">→</span>
+        <input type="date" id="ra-to" style="height:28px;background:var(--bg2);border:1.5px solid var(--line2);border-radius:var(--r);padding:0 8px;font-size:.74rem;color:var(--ink);font-family:var(--sans);outline:none;" onchange="filterRaList()" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line2)'">
+      </div>
     </div>
     <div style="overflow-y:auto;flex:1;max-height:340px;" id="ra-body"></div>
     <div class="modal-footer">
       <button class="btn-secondary" onclick="ARK.closeModal('modal-retainer-all')">Close</button>
       <button class="btn-primary" onclick="ARK.closeModal('modal-retainer-all');addDeliverable()">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add deliverable
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add report
       </button>
     </div>
   </div>
@@ -1006,7 +1006,7 @@ let pollTimer=null;
 const DRIVE_FOLDER_ID="1oaLlUJrnD0uzPtM6CmL4NFWRwbULnxz7";
 let wizard={step:1,totalSteps:3,type:"one-off",data:{}};
 let _statusDropdownOpen=false;
-let vlPeriod="all",vlSearch="",raStatusFilter="all",raSearch="",retainerAllView="month";
+let vlPeriod="all",vlSearch="",raStatusFilter="all",raSearch="",retainerAllView="month",raPeriod="all";
 
 // ── Suppress blink: track last rendered signature ──
 let _lastRenderSig="";
@@ -1889,12 +1889,18 @@ function renderRetainerSection(p){
   const ms=p.milestones||[];
   const viewBtn=document.getElementById("retainer-view-all-btn");
   if(viewBtn)viewBtn.style.display=ms.length>0?"":"none";
-  const sorted=[...ms].sort((a,b)=>{
-    const ta=a.createdAt||a.id||"";const tb=b.createdAt||b.id||"";return tb.localeCompare(ta);
-  });
-  const shown=sorted.slice(0,7);
+// Show current week Mon–Sun only in the panel
+  const now=new Date();
+  const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);sun.setHours(23,59,59,999);
+  const weekLabel=mon.toLocaleDateString(undefined,{month:"short",day:"numeric"})+" – "+sun.toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  const thisWeek=ms.filter(m=>{
+    if(!m.dueDate)return false;
+    const d=new Date(m.dueDate);return d>=mon&&d<=sun;
+  }).sort((a,b)=>{const ta=a.dueDate||"";const tb=b.dueDate||"";return tb.localeCompare(ta);});
   const list=document.getElementById("deliverable-list");
-  if(!shown.length){list.innerHTML=`<div style="text-align:center;padding:16px 0;font-size:.78rem;color:var(--ink4);">No deliverables yet. Add one above.</div>`;return;}
+  if(!thisWeek.length){list.innerHTML=`<div style="text-align:center;padding:16px 0;font-size:.78rem;color:var(--ink4);">No reports this week (${weekLabel}).</div>`;return;}
+  const shown=thisWeek;
   list.innerHTML=shown.map(m=>{
     const mi=ms.indexOf(m);const isDone=m.status==="done"||m.approvalStatus==="approved";
     return`<div class="deliverable-item" style="border-color:var(--line2);cursor:default;" onclick="openDeliverableDetail(${mi})">
@@ -1935,25 +1941,43 @@ function toggleDeliverableStatus(e,mi){
 }
 
 function addDeliverable(){
+  const today=new Date().toISOString().slice(0,10);
+  document.getElementById("del-report-date").value=today;
+  document.getElementById("del-report-title").value="";
+  document.getElementById("del-report-content").value="";
+  document.getElementById("del-report-id").value="";
+  ARK.openModal("modal-deliverable-report");
+  setTimeout(()=>document.getElementById("del-report-title")?.focus(),120);
+}
+function saveDeliverableReport(){
+  const title=document.getElementById("del-report-title").value.trim();
+  const date=document.getElementById("del-report-date").value;
+  const content=document.getElementById("del-report-content").value.trim();
+  const editId=document.getElementById("del-report-id").value;
+  if(!title){ARK.showToast("Title is required","warn");return;}
   if(!selectedProject)return;
-  const newDel={id:"tmp-"+Date.now(),title:"New deliverable",status:"pending",subtasks:[],dueDate:new Date().toISOString().slice(0,10),completedAt:"",order:selectedProject.milestones.length,amount:0,approvalStatus:"pending",revisionNotes:{},createdAt:new Date().toISOString()};
-  selectedProject.milestones.unshift(newDel); // Add to front so it appears first
+  if(editId){
+    const idx=selectedProject.milestones.findIndex(m=>m.id===editId);
+    if(idx>-1){selectedProject.milestones[idx].title=title;selectedProject.milestones[idx].dueDate=date;selectedProject.milestones[idx].description=content;}
+  }else{
+    const newDel={id:"tmp-"+Date.now(),title,status:"pending",subtasks:[],dueDate:date,completedAt:"",order:selectedProject.milestones.length,amount:0,approvalStatus:"pending",revisionNotes:{},description:content,createdAt:new Date().toISOString()};
+    selectedProject.milestones.unshift(newDel);
+  }
   milestonesDirty=true;
   renderRetainerSection(selectedProject);
   updateRetainerOverviewStats(selectedProject);
-  // Focus the very first input (the new one, since we unshift'd)
-  setTimeout(()=>{
-    const list=document.getElementById("deliverable-list");
-    const firstInput=list?.querySelector(".deliverable-item input");
-    if(firstInput){
-      firstInput.focus();
-      firstInput.select();
-      // Pulse animation on new item
-      const item=firstInput.closest(".deliverable-item");
-      if(item){item.classList.add("new-highlight");setTimeout(()=>item.classList.remove("new-highlight"),600);}
-    }
-  },30);
+  ARK.closeModal("modal-deliverable-report");
   saveNow();
+  ARK.showToast(editId?"Report updated":"Report added","success");
+}
+function openDeliverableDetail(mi){
+  if(!selectedProject)return;
+  const m=selectedProject.milestones[mi];if(!m)return;
+  document.getElementById("del-report-date").value=m.dueDate||new Date().toISOString().slice(0,10);
+  document.getElementById("del-report-title").value=m.title||"";
+  document.getElementById("del-report-content").value=m.description||"";
+  document.getElementById("del-report-id").value=m.id;
+  ARK.openModal("modal-deliverable-report");
 }
 
 
@@ -1967,128 +1991,100 @@ function deleteDeliverable(mi){
   ARK.showToast("Deliverable removed","success");
 }
 
+function deleteRaEntry(mi){
+  if(!selectedProject)return;
+  selectedProject.milestones.splice(mi,1);
+  milestonesDirty=true;
+  renderRetainerAll();
+  renderRetainerSection(selectedProject);
+  updateRetainerOverviewStats(selectedProject);
+  saveNow();
+  ARK.showToast("Report deleted","success");
+}
+  
 // ── Retainer View All ──
 function openRetainerViewAll(){
   if(!selectedProject)return;
-  const ms=selectedProject.milestones||[];
-  const done=ms.filter(m=>m.status==="done"||m.approvalStatus==="approved").length;
-  const approval=ms.filter(m=>m.approvalStatus==="approved").length;
-  document.getElementById("ra-total").textContent=ms.length;
-  document.getElementById("ra-done").textContent=done;
-  document.getElementById("ra-pending").textContent=ms.length-done;
-  document.getElementById("ra-approval").textContent=approval;
-  raStatusFilter="all";raSearch="";
+  raStatusFilter="all";raSearch="";raPeriod="all";
   document.getElementById("ra-search").value="";
-  document.querySelectorAll("[data-rv]").forEach(b=>b.classList.toggle("active",b.dataset.rv==="all"));
-  retainerAllView="month";
-  document.querySelectorAll(".rv-tab").forEach(t=>t.classList.toggle("active",t.dataset.rv==="month"));
-  renderRetainerAll("month");ARK.openModal("modal-retainer-all");
+  document.querySelectorAll("[data-ra-period]").forEach(b=>b.classList.toggle("active",b.dataset.raPeriod==="all"));
+  const rangeWrap=document.getElementById("ra-range-wrap");if(rangeWrap)rangeWrap.style.display="none";
+  renderRetainerAll();
+  ARK.openModal("modal-retainer-all");
 }
 function setRaStatusFilter(f,el){raStatusFilter=f;document.querySelectorAll("[data-rv]").forEach(b=>b.classList.remove("active"));el.classList.add("active");renderRetainerAll(retainerAllView);}
-function filterRaList(){raSearch=document.getElementById("ra-search").value.toLowerCase();renderRetainerAll(retainerAllView);}
-function switchRetainerView(view,el){retainerAllView=view;document.querySelectorAll(".rv-tab").forEach(t=>t.classList.remove("active"));el.classList.add("active");renderRetainerAll(view);}
-
+function setRaPeriod(p,el){
+  raPeriod=p;
+  document.querySelectorAll("[data-ra-period]").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  const rangeWrap=document.getElementById("ra-range-wrap");
+  if(rangeWrap)rangeWrap.style.display=p==="range"?"flex":"none";
+  renderRetainerAll();
+}
+function filterRaList(){raSearch=document.getElementById("ra-search").value.toLowerCase();renderRetainerAll();}
 function getRaFiltered(){
-  return(selectedProject?.milestones||[]).filter(m=>{
-    if(raSearch&&!m.title.toLowerCase().includes(raSearch))return false;
-    if(raStatusFilter==="done"&&m.status!=="done"&&m.approvalStatus!=="approved")return false;
-    if(raStatusFilter==="pending"&&(m.status==="done"||m.approvalStatus==="approved"))return false;
-    if(raStatusFilter==="approved"&&m.approvalStatus!=="approved")return false;
+  const now=new Date();
+  const ms=selectedProject?.milestones||[];
+  return ms.filter(m=>{
+    if(raSearch&&!m.title.toLowerCase().includes(raSearch)&&!(m.description||"").toLowerCase().includes(raSearch))return false;
+    if(raPeriod==="all")return true;
+    if(!m.dueDate)return false;
+    const d=new Date(m.dueDate);
+    if(raPeriod==="week"){const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);return d>=mon;}
+    if(raPeriod==="month")return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    if(raPeriod==="range"){
+      const from=document.getElementById("ra-from")?.value;
+      const to=document.getElementById("ra-to")?.value;
+      if(from&&d<new Date(from))return false;
+      if(to&&d>new Date(to+"T23:59:59"))return false;
+      return true;
+    }
     return true;
   });
 }
-function renderRetainerAll(view){
+function renderRetainerAll(){
   const body=document.getElementById("ra-body");
   const filtered=getRaFiltered();
-  if(!filtered.length){body.innerHTML=`<div style="text-align:center;padding:32px;color:var(--ink4);font-size:.8rem;">${raSearch||raStatusFilter!=="all"?"No deliverables match your filters.":"No deliverables yet."}</div>`;return;}
-  const milestones=selectedProject?.milestones||[];
-  if(view==="month"){
-    const byMonth={};
-    filtered.forEach(m=>{
-      const key=m.dueDate?m.dueDate.slice(0,7):"no-date";
-      const label=m.dueDate?new Date(m.dueDate).toLocaleDateString(undefined,{month:"long",year:"numeric"}):"No date";
-      if(!byMonth[key])byMonth[key]={label,items:[]};byMonth[key].items.push(m);
-    });
-    body.innerHTML=Object.entries(byMonth).sort(([a],[b])=>b.localeCompare(a)).map(([,g])=>{
-      const done=g.items.filter(m=>m.status==="done"||m.approvalStatus==="approved").length;
-      return`<div class="rv-group-header"><span>${g.label}</span><span class="rv-group-progress">${done}/${g.items.length} done</span></div>
-      ${g.items.map(m=>renderRaItem(m,milestones.indexOf(m))).join("")}`;
-    }).join("");
-  }else if(view==="week"){
-    const byWeek={};
-    filtered.forEach(m=>{
-      if(!m.dueDate){const k="no-date";if(!byWeek[k])byWeek[k]={label:"No date",items:[]};byWeek[k].items.push(m);return;}
-      const d=new Date(m.dueDate);const mon=new Date(d);mon.setDate(d.getDate()-((d.getDay()+6)%7));
-      const key=mon.toISOString().slice(0,10);const sun=new Date(mon);sun.setDate(mon.getDate()+6);
-      const label=mon.toLocaleDateString(undefined,{month:"short",day:"numeric"})+" – "+sun.toLocaleDateString(undefined,{month:"short",day:"numeric"});
-      if(!byWeek[key])byWeek[key]={label,items:[]};byWeek[key].items.push(m);
-    });
-    body.innerHTML=Object.entries(byWeek).sort(([a],[b])=>b.localeCompare(a)).map(([,g])=>{
-      const done=g.items.filter(m=>m.status==="done"||m.approvalStatus==="approved").length;
-      return`<div class="rv-group-header"><span>${g.label}</span><span class="rv-group-progress">${done}/${g.items.length}</span></div>
-      ${g.items.map(m=>renderRaItem(m,milestones.indexOf(m))).join("")}`;
-    }).join("");
-  }else{
-    const byDay={};
-    filtered.forEach(m=>{
-      const key=m.dueDate||"no-date";const label=m.dueDate?new Date(m.dueDate).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"}):"No date";
-      if(!byDay[key])byDay[key]={label,items:[]};byDay[key].items.push(m);
-    });
-    body.innerHTML=Object.entries(byDay).sort(([a],[b])=>b.localeCompare(a)).map(([,g])=>{
-      const done=g.items.filter(m=>m.status==="done"||m.approvalStatus==="approved").length;
-      return`<div class="rv-group-header"><span>${g.label}</span><span class="rv-group-progress">${done}/${g.items.length}</span></div>
-      ${g.items.map(m=>renderRaItem(m,milestones.indexOf(m))).join("")}`;
-    }).join("");
-  }
+  const ms=selectedProject?.milestones||[];
+  const now=new Date();
+  // Update summary strip to reflect current filter
+  const thisMonthCount=filtered.filter(m=>{if(!m.dueDate)return false;const d=new Date(m.dueDate);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();}).length;
+  const mon=new Date(now);mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
+  const thisWeekCount=filtered.filter(m=>{if(!m.dueDate)return false;const d=new Date(m.dueDate);return d>=mon;}).length;
+  const approvedCount=filtered.filter(m=>m.approvalStatus==="approved").length;
+  document.getElementById("ra-total").textContent=filtered.length;
+  document.getElementById("ra-done").textContent=thisMonthCount;
+  document.getElementById("ra-pending").textContent=thisWeekCount;
+  document.getElementById("ra-approval").textContent=approvedCount;
+  if(!filtered.length){body.innerHTML=`<div style="text-align:center;padding:32px;color:var(--ink4);font-size:.8rem;">${raSearch||raPeriod!=="all"?"No reports match your filters.":"No reports yet."}</div>`;return;}
+  // Group by month, sorted newest first
+  const byMonth={};
+  filtered.sort((a,b)=>(b.dueDate||"").localeCompare(a.dueDate||"")).forEach(m=>{
+    const key=m.dueDate?m.dueDate.slice(0,7):"no-date";
+    const label=m.dueDate?new Date(m.dueDate).toLocaleDateString(undefined,{month:"long",year:"numeric"}):"No date";
+    if(!byMonth[key])byMonth[key]={label,items:[]};byMonth[key].items.push(m);
+  });
+  body.innerHTML=Object.entries(byMonth).sort(([a],[b])=>b.localeCompare(a)).map(([,g])=>{
+    return`<div class="rv-group-header"><span>${g.label}</span><span class="rv-group-progress">${g.items.length} report${g.items.length!==1?"s":""}</span></div>
+    ${g.items.map(m=>renderRaItem(m,ms.indexOf(m))).join("")}`;
+  }).join("");
 }
 function renderRaItem(m,mi){
-  const isDone=m.status==="done"||m.approvalStatus==="approved";
-  const date=m.dueDate?new Date(m.dueDate).toLocaleDateString(undefined,{month:"short",day:"numeric"}):"—";
-  return`<div class="retainer-deliverable-item">
-    <div class="rd-check ${isDone?"done":""}" onclick="toggleRaItemCheck(${mi},this)"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-    <span class="rd-title ${isDone?"done":""}">${ARK.escHtml(m.title)}</span>
-    <span class="rd-date">${date}</span>
-    ${m.approvalStatus==="approved"?`<span style="background:#dcfce7;color:#166534;font-size:.6rem;padding:2px 6px;border-radius:999px;font-weight:700;display:inline-flex;align-items:center;gap:2px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></span>`:""}
-    ${m.approvalStatus==="revision_requested"?`<span style="background:#f5f3ff;color:#7c3aed;font-size:.6rem;padding:2px 6px;border-radius:999px;font-weight:700;display:inline-flex;align-items:center;gap:2px;"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg></span>`:""}
-    <div class="rd-act">
-      <button class="rd-btn" onclick="openRaEdit(${mi})" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+  const date=m.dueDate?new Date(m.dueDate).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}):"—";
+  const added=m.createdAt?new Date(m.createdAt).toLocaleDateString(undefined,{month:"short",day:"numeric"}):"";
+  return`<div class="retainer-deliverable-item" style="flex-direction:column;align-items:flex-start;gap:6px;cursor:pointer;" onclick="openDeliverableDetail(${mi})">
+    <div style="display:flex;align-items:center;width:100%;gap:10px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:.82rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ARK.escHtml(m.title)}</div>
+        <div style="font-size:.7rem;color:var(--ink4);margin-top:1px;">${date}${added?" · added "+added:""}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        ${m.approvalStatus==="approved"?`<span style="background:#dcfce7;color:#166634;font-size:.6rem;padding:2px 6px;border-radius:999px;font-weight:700;">Approved</span>`:""}
+        <button class="rd-btn" style="opacity:1;" onclick="event.stopPropagation();deleteRaEntry(${mi})" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+      </div>
     </div>
-  </div>
-  <div id="ra-edit-${mi}" style="display:none;padding:8px 16px;background:var(--accent-bg);border-bottom:1px solid var(--accent-ln);gap:8px;align-items:center;flex-wrap:wrap;">
-    <input id="ra-t-${mi}" type="text" value="${ARK.escHtml(m.title)}" style="flex:1;min-width:120px;height:30px;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);padding:0 8px;font-size:.78rem;color:var(--ink);font-family:var(--sans);outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--line2)'">
-    <input id="ra-d-${mi}" type="date" value="${m.dueDate||""}" style="width:130px;height:30px;background:var(--bg);border:1.5px solid var(--line2);border-radius:var(--r);padding:0 8px;font-size:.78rem;color:var(--ink);font-family:var(--sans);outline:none;">
-    <button onclick="saveRaEdit(${mi})" style="height:30px;padding:0 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:.74rem;font-weight:700;cursor:pointer;font-family:var(--sans);transition:transform .12s;" onmousedown="this.style.transform='scale(.95)'" onmouseup="this.style.transform=''">Save</button>
-    <button onclick="closeRaEdit(${mi})" style="height:30px;padding:0 10px;background:var(--bg3);color:var(--ink3);border:none;border-radius:var(--r);font-size:.74rem;cursor:pointer;font-family:var(--sans);transition:transform .12s;" onmousedown="this.style.transform='scale(.95)'" onmouseup="this.style.transform=''">Cancel</button>
+    ${m.description?`<div style="font-size:.76rem;color:var(--ink3);line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:60px;overflow:hidden;position:relative;">${ARK.escHtml(m.description.slice(0,200))}${m.description.length>200?"…":""}</div>`:""}
   </div>`;
-}
-
-// Instant check toggle in view-all modal (no strikethrough)
-function toggleRaItemCheck(mi,btn){
-  if(!selectedProject)return;
-  const m=selectedProject.milestones[mi];
-  const newDone=!(m.status==="done"||m.approvalStatus==="approved");
-  m.status=newDone?"done":"pending";
-  m.completedAt=newDone?new Date().toISOString():"";
-  btn.classList.toggle("done",newDone);
-  const row=btn.closest(".retainer-deliverable-item");
-  if(row){
-    const titleEl=row.querySelector(".rd-title");
-    if(titleEl){titleEl.classList.toggle("done",false);} // No strikethrough
-  }
-  milestonesDirty=true;
-  updateRetainerOverviewStats(selectedProject);
-  markFreelancerChange(selectedProject.id);
-  saveNow();
-}
-
-function openRaEdit(mi){document.querySelectorAll("[id^='ra-edit-']").forEach(el=>el.style.display="none");const el=document.getElementById("ra-edit-"+mi);if(el)el.style.display="flex";}
-function closeRaEdit(mi){const el=document.getElementById("ra-edit-"+mi);if(el)el.style.display="none";}
-async function saveRaEdit(mi){
-  const title=document.getElementById("ra-t-"+mi)?.value.trim()||"",dueDate=document.getElementById("ra-d-"+mi)?.value||"";
-  if(!title)return;if(!selectedProject)return;
-  selectedProject.milestones[mi].title=title;selectedProject.milestones[mi].dueDate=dueDate;
-  milestonesDirty=true;closeRaEdit(mi);renderRetainerAll(retainerAllView);renderRetainerSection(selectedProject);
-  await saveNow();ARK.showToast("Deliverable updated","success");
 }
 
 // ════════════════════════════════════════════════
@@ -2478,7 +2474,7 @@ function getFileIconSvg(type){
 }
 
 function openAttachment(url){window.open(url,"_blank","noopener");}
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeDetail();closeWizard();["modal-delete","modal-log-time","modal-view-logs","modal-retainer-all","modal-edit-project"].forEach(id=>ARK.closeModal(id));}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeDetail();closeWizard();["modal-delete","modal-log-time","modal-view-logs","modal-retainer-all","modal-edit-project","modal-deliverable-report"].forEach(id=>ARK.closeModal(id));}});
 </script>
 </body>
 </html>
