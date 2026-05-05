@@ -2148,16 +2148,22 @@ function renderActivityFeed(entries){
     const isClient=e.actor==="client";
     const dotCls=isClient?"client":"freelancer";
     const tagLabel=isClient?"Client":"You";
-    return`<div class="activity-item" style="animation-delay:${i*0.04}s">
+    const borderColor=isClient?"#bfdbfe":"var(--accent-ln)";
+    const tagBg=isClient?"#eff6ff":"var(--accent-bg)";
+    const tagColor=isClient?"#1d4ed8":"var(--accent)";
+    const tagIcon=isClient
+      ?`<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`
+      :`<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>`;
+    return`<div class="activity-item" style="animation-delay:${i*0.04}s;border-left:3px solid ${borderColor};padding-left:13px;">
       <div class="activity-dot-wrap">
         <div class="activity-dot ${dotCls}">${getActivityIcon(e.action)}</div>
         ${i<entries.length-1?'<div class="activity-line"></div>':""}
       </div>
       <div class="activity-content">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
           <span class="activity-who">${ARK.escHtml(e.actorName||tagLabel)}</span>
-          <span class="activity-tag ${dotCls}">${tagLabel}</span>
-          ${e.local?`<span style="font-size:.58rem;color:var(--ink4);background:var(--bg3);padding:1px 5px;border-radius:4px;">just now</span>`:""}
+          <span style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;font-size:.6rem;font-weight:700;letter-spacing:.03em;background:${tagBg};color:${tagColor};">${tagIcon}${tagLabel}</span>
+          ${e.local?`<span style="font-size:.58rem;color:var(--ink4);background:var(--bg3);padding:1px 5px;border-radius:4px;font-style:italic;">just now</span>`:""}
         </div>
         <div style="font-size:.78rem;color:var(--ink2);line-height:1.5;">${ARK.escHtml(formatActivityDesc(e))}</div>
         <div class="activity-time"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${formatActivityTime(e.timestamp)}</div>
@@ -2165,6 +2171,8 @@ function renderActivityFeed(entries){
     </div>`;
   }).join("");
 }
+
+  
 function getActivityIcon(action){
   const icons={
     create_project:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
