@@ -442,6 +442,32 @@ body{font-family:var(--sans);background:var(--bg2);color:var(--ink);-webkit-font
   .filter-btn{flex:1;text-align:center;}
   .retainer-stats{grid-template-columns:1fr;}
 }
+
+
+/* Wizard */
+.wizard-steps{display:flex;align-items:center;gap:0;padding:16px 20px 0;flex-shrink:0;}
+.wizard-step{display:flex;align-items:center;gap:6px;font-size:.72rem;font-weight:600;color:var(--ink4);}
+.wizard-step.active{color:var(--accent);}
+.wizard-step.done{color:var(--ink3);}
+.wizard-step-num{width:22px;height:22px;border-radius:50%;border:2px solid var(--line2);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;background:var(--bg);flex-shrink:0;}
+.wizard-step.active .wizard-step-num{border-color:var(--accent);background:var(--accent);color:#fff;}
+.wizard-step.done .wizard-step-num{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);}
+.wizard-sep{flex:1;height:1px;background:var(--line2);margin:0 6px;}
+.wizard-sep.done{background:var(--accent-ln);}
+.wizard-pane{display:none;}.wizard-pane.active{display:block;}
+.type-card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px;}
+.type-card{border:1.5px solid var(--line2);border-radius:var(--r);padding:12px 10px;cursor:pointer;text-align:center;transition:all .15s;user-select:none;}
+.type-card:hover{border-color:var(--accent-ln);background:var(--accent-bg);}
+.type-card.selected{border-color:var(--accent);background:var(--accent-bg);}
+.type-card-icon{font-size:1.2rem;margin-bottom:4px;}
+.type-card-label{font-size:.74rem;font-weight:700;color:var(--ink);}
+.type-card-desc{font-size:.63rem;color:var(--ink4);margin-top:2px;}
+.review-grid{display:flex;flex-direction:column;gap:8px;}
+.review-row{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line2);}
+.review-row:last-child{border-bottom:none;}
+.review-key{font-size:.72rem;color:var(--ink4);font-weight:600;}
+.review-val{font-size:.78rem;color:var(--ink);font-weight:500;text-align:right;max-width:60%;}
+
 </style>
 </head>
 <body>
@@ -756,25 +782,58 @@ body{font-family:var(--sans);background:var(--bg2);color:var(--ink);-webkit-font
   <div class="modal">
     <div class="modal-header">
       <span class="modal-title" id="modal-project-title">New project request</span>
-      <button class="modal-close" onclick="closeModal('modal-new-project')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <button class="modal-close" onclick="closeModal('modal-new-project')">✕</button>
     </div>
+
+    <!-- Step indicators -->
+    <div class="wizard-steps">
+      <div class="wizard-step active"><div class="wizard-step-num">1</div><span>Basics</span></div>
+      <div class="wizard-sep"></div>
+      <div class="wizard-step"><div class="wizard-step-num">2</div><span>Details</span></div>
+      <div class="wizard-sep"></div>
+      <div class="wizard-step"><div class="wizard-step-num">3</div><span>Review</span></div>
+    </div>
+
     <div class="modal-body">
       <input type="hidden" id="edit-project-id">
-      <div class="field"><label class="field-label">Project title *</label><input class="field-input" type="text" id="p-title" placeholder="e.g. Website redesign" autocomplete="off"><span id="err-p-title" style="font-size:.71rem;color:var(--red);display:none;margin-top:2px;">Required</span></div>
-      <div class="field" id="freelancer-field"><label class="field-label">Assign to freelancer *</label><select class="field-input field-select" id="p-freelancer"><option value="">Select freelancer…</option></select><span id="err-p-fl" style="font-size:.71rem;color:var(--red);display:none;margin-top:2px;">Required</span></div>
-      <div class="field"><label class="field-label">Description</label><textarea class="field-input field-textarea" id="p-desc" placeholder="What does this project involve?"></textarea></div>
-      <div class="field-row">
-        <div class="field"><label class="field-label">Type</label><select class="field-input field-select" id="p-type" onchange="onProjectTypeChange()"><option value="one-off">One-off / Fixed</option><option value="hourly">Hourly</option><option value="retainer">Retainer</option></select></div>
+      <input type="hidden" id="p-type-val" value="one-off">
+
+      <!-- Step 1 -->
+      <div class="wizard-pane active">
+        <div class="field"><label class="field-label">Project title *</label><input class="field-input" type="text" id="p-title" placeholder="e.g. Website redesign" autocomplete="off"><span id="err-p-title" style="font-size:.71rem;color:var(--red);display:none;">Required</span></div>
+        <div class="field" id="freelancer-field"><label class="field-label">Assign to freelancer *</label><select class="field-input field-select" id="p-freelancer"><option value="">Select freelancer…</option></select><span id="err-p-fl" style="font-size:.71rem;color:var(--red);display:none;">Required</span></div>
+        <div class="field"><label class="field-label">Description</label><textarea class="field-input field-textarea" id="p-desc" placeholder="What does this project involve?"></textarea></div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="wizard-pane">
+        <div class="field">
+          <label class="field-label">Project type</label>
+          <div class="type-card-grid">
+            <div class="type-card selected" data-type="one-off" onclick="selectTypeCard('one-off')"><div class="type-card-icon">🎯</div><div class="type-card-label">One-off</div><div class="type-card-desc">Fixed scope & price</div></div>
+            <div class="type-card" data-type="hourly" onclick="selectTypeCard('hourly')"><div class="type-card-icon">⏱️</div><div class="type-card-label">Hourly</div><div class="type-card-desc">Pay per hour</div></div>
+            <div class="type-card" data-type="retainer" onclick="selectTypeCard('retainer')"><div class="type-card-icon">🔄</div><div class="type-card-label">Retainer</div><div class="type-card-desc">Ongoing monthly</div></div>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label class="field-label" id="p-budget-label">Budget ($)</label><input class="field-input" type="number" id="p-budget" placeholder="0" min="0"></div>
+          <div class="field" id="p-hours-field" style="display:none;"><label class="field-label">Estimated hours</label><input class="field-input" type="number" id="p-hours" placeholder="e.g. 40" min="1"></div>
+        </div>
         <div class="field"><label class="field-label" id="p-due-label">Due date</label><input class="field-input" type="date" id="p-due"></div>
       </div>
-      <div class="field-row">
-        <div class="field"><label class="field-label" id="p-budget-label">Budget ($)</label><input class="field-input" type="number" id="p-budget" placeholder="0" min="0"></div>
-        <div class="field" id="p-hours-field" style="display:none;"><label class="field-label">Estimated hours</label><input class="field-input" type="number" id="p-hours" placeholder="e.g. 40" min="1"></div>
+
+      <!-- Step 3 -->
+      <div class="wizard-pane">
+        <p style="font-size:.8rem;color:var(--ink3);margin-bottom:14px;">Review your request before sending.</p>
+        <div id="review-area"></div>
       </div>
     </div>
+
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modal-new-project')">Cancel</button>
-      <button class="btn-primary" id="save-project-btn" onclick="saveProject()"><span class="btn-label" id="save-project-lbl">Send request</span><div class="btn-spin"></div></button>
+      <button class="btn-secondary" id="wiz-back-btn" style="display:none;" onclick="wizardBack()">← Back</button>
+      <button class="btn-secondary" onclick="closeModal('modal-new-project')" id="wiz-cancel-btn">Cancel</button>
+      <button class="btn-primary" id="wiz-next-btn" onclick="wizardNext()">Next →</button>
+      <button class="btn-primary" id="save-project-btn" style="display:none;" onclick="saveProject()"><span class="btn-label" id="save-project-lbl">Send request</span><div class="btn-spin"></div></button>
     </div>
   </div>
 </div>
@@ -1655,29 +1714,79 @@ function onProjectTypeChange(){
   document.getElementById("p-budget-label").textContent=type==="hourly"?"Hourly rate ($)":type==="retainer"?"Monthly rate ($)":"Budget ($)";
   document.getElementById("p-due-label").textContent=type==="retainer"?"End date (optional)":"Due date";
 }
+
+// Wizard state
+let wizardStep=1, wizardMode="new"; // "new" | "edit"
+
 function openNewProjectModal(){
-  document.getElementById("modal-project-title").textContent="New project request";
+  wizardMode="new"; wizardStep=1;
   document.getElementById("edit-project-id").value="";
+  // clear fields
   ["p-title","p-desc","p-due","p-budget","p-hours"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  document.getElementById("p-type").value="one-off";
+  document.getElementById("p-type-val").value="one-off";
+  selectTypeCard("one-off");
   document.getElementById("freelancer-field").style.display="";
-  document.getElementById("save-project-lbl").textContent="Send request";
-  onProjectTypeChange();openModal("modal-new-project");
+  document.getElementById("modal-project-title").textContent="New project request";
+  showWizardStep(1);
+  openModal("modal-new-project");
 }
-function openEditProject(){
-  if(!selectedProject)return;const p=selectedProject;
-  document.getElementById("modal-project-title").textContent="Edit project";
-  document.getElementById("edit-project-id").value=p.id;
-  document.getElementById("p-title").value=p.title;
-  document.getElementById("p-desc").value=p.description||"";
-  document.getElementById("p-type").value=p.type||"one-off";
-  document.getElementById("p-due").value=p.dueDate?p.dueDate.slice(0,10):"";
-  document.getElementById("p-budget").value=p.budgetAmount||"";
-  document.getElementById("p-hours").value=p.estimatedHours||"";
-  document.getElementById("freelancer-field").style.display="none";
-  document.getElementById("save-project-lbl").textContent="Save changes";
-  onProjectTypeChange();openModal("modal-new-project");
+
+function showWizardStep(n){
+  wizardStep=n;
+  document.querySelectorAll(".wizard-pane").forEach((p,i)=>p.classList.toggle("active",i+1===n));
+  document.querySelectorAll(".wizard-step").forEach((s,i)=>{
+    s.classList.toggle("active",i+1===n);
+    s.classList.toggle("done",i+1<n);
+  });
+  document.querySelectorAll(".wizard-sep").forEach((s,i)=>s.classList.toggle("done",i+1<n));
+  // footer buttons
+  document.getElementById("wiz-back-btn").style.display=n>1?"":"none";
+  document.getElementById("wiz-next-btn").style.display=n<3?"":"none";
+  document.getElementById("save-project-btn").style.display=n===3?"":"none";
+  if(n===3)buildReview();
 }
+
+function wizardNext(){
+  if(wizardStep===1){
+    const title=document.getElementById("p-title").value.trim();
+    const flId=document.getElementById("p-freelancer").value;
+    let ok=true;
+    if(!title){document.getElementById("err-p-title").style.display="block";ok=false;}else document.getElementById("err-p-title").style.display="none";
+    if(wizardMode==="new"&&!flId){document.getElementById("err-p-fl").style.display="block";ok=false;}else document.getElementById("err-p-fl").style.display="none";
+    if(!ok)return;
+  }
+  showWizardStep(wizardStep+1);
+}
+function wizardBack(){showWizardStep(wizardStep-1);}
+
+function selectTypeCard(type){
+  document.getElementById("p-type-val").value=type;
+  document.querySelectorAll(".type-card").forEach(c=>c.classList.toggle("selected",c.dataset.type===type));
+  // show/hide conditional fields
+  document.getElementById("p-hours-field").style.display=type==="hourly"?"":"none";
+  document.getElementById("p-budget-label").textContent=type==="hourly"?"Hourly rate ($)":type==="retainer"?"Monthly rate ($)":"Budget ($)";
+  document.getElementById("p-due-label").textContent=type==="retainer"?"End date (optional)":"Due date";
+}
+
+function buildReview(){
+  const title=document.getElementById("p-title").value.trim();
+  const flId=document.getElementById("p-freelancer").value;
+  const flName=document.getElementById("p-freelancer").options[document.getElementById("p-freelancer").selectedIndex]?.text||"—";
+  const type=document.getElementById("p-type-val").value;
+  const due=document.getElementById("p-due").value;
+  const budget=document.getElementById("p-budget").value;
+  const typeLabel=type==="hourly"?"Hourly":type==="retainer"?"Retainer":"One-off / Fixed";
+  const budgetLabel=type==="hourly"?"Rate":type==="retainer"?"Monthly rate":"Budget";
+  document.getElementById("review-area").innerHTML=`
+    <div class="review-grid">
+      <div class="review-row"><span class="review-key">Title</span><span class="review-val">${escHtml(title)||"—"}</span></div>
+      ${wizardMode==="new"?`<div class="review-row"><span class="review-key">Freelancer</span><span class="review-val">${escHtml(flName)}</span></div>`:""}
+      <div class="review-row"><span class="review-key">Type</span><span class="review-val">${typeLabel}</span></div>
+      ${due?`<div class="review-row"><span class="review-key">Due date</span><span class="review-val">${due}</span></div>`:""}
+      ${budget?`<div class="review-row"><span class="review-key">${budgetLabel}</span><span class="review-val">$${budget}</span></div>`:""}
+    </div>`;
+}
+  
 async function saveProject(){
   const id=document.getElementById("edit-project-id").value,title=document.getElementById("p-title").value.trim(),flId=document.getElementById("p-freelancer").value;
   let ok=true;
@@ -1685,7 +1794,7 @@ async function saveProject(){
   if(!id&&!flId){document.getElementById("err-p-fl").style.display="block";ok=false;}else document.getElementById("err-p-fl").style.display="none";
   if(!ok)return;
   const btn=document.getElementById("save-project-btn");setBtnLoading(btn,true);
-  const pType=document.getElementById("p-type").value;
+  const pType=document.getElementById("p-type-val");
   const payload={token:getToken(),title,description:document.getElementById("p-desc").value.trim(),type:pType,dueDate:document.getElementById("p-due").value,budgetType:pType==="hourly"?"hourly":"fixed",budgetAmount:parseFloat(document.getElementById("p-budget").value)||0,currency:"USD",estimatedHours:parseFloat(document.getElementById("p-hours")?.value)||40};
   try{
     let res;
