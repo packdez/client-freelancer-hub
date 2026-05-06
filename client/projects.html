@@ -1252,7 +1252,14 @@ async function acceptProject(){
   setBtnLoading(btn,true);
   markOwnChange(selectedProject.id);
   try{
-    const res=await api({action:"respond_to_project_request",token:getToken(),projectId:selectedProject.id,response:"accepted"});
+    
+  const res=await api({action:"update_client_project_status",token:getToken(),projectId:selectedProject.id,status:"active"});
+
+
+    // Then manually set requestStatus on success:
+    if(res.success){
+      selectedProject.requestStatus="accepted";
+      selectedProject.status="active";
     if(res.success){
       selectedProject.requestStatus="accepted";selectedProject.status="active";
       const idx=allProjects.findIndex(p=>p.id===selectedProject.id);
@@ -1538,7 +1545,8 @@ async function saveProjectLink(){
   renderFiles(selectedProject.attachments);toggleLinkInput();
   document.getElementById("proj-link-url").value="";document.getElementById("proj-link-label").value="";
   showToast("Link saved","success");
-  try{await api({action:"save_project_attachments",token:getToken(),projectId:selectedProject.id,attachments:selectedProject.attachments});}catch(e){}
+  try{await api({action:"client_save_project_attachments",token:getToken(),projectId:selectedProject.id,attachments:selectedProject.attachments});}catch(e){}
+
 }
 function triggerProjectUpload(){
   if(!selectedProject)return;
@@ -1556,7 +1564,7 @@ async function handleProjectFile(file){
       if(!selectedProject.attachments)selectedProject.attachments=[];
       selectedProject.attachments.push({name:file.name,url:res.viewUrl,type:file.type,uploadedAt:new Date().toISOString()});
       renderFiles(selectedProject.attachments);showToast("File uploaded","success");
-      try{await api({action:"save_project_attachments",token:getToken(),projectId:selectedProject.id,attachments:selectedProject.attachments});}catch(e){}
+      try{await api({action:"client_save_project_attachments",token:getToken(),projectId:selectedProject.id,attachments:selectedProject.attachments});}catch(e){}
     }else showToast(res.error||"Upload failed","error");
   }catch(e){showToast("Upload error","error");}
 }
