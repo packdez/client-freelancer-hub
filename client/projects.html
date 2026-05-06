@@ -1392,7 +1392,6 @@ function recalcProgress(){
 }
 
 // ── Project save (milestones from client side) ──
-let projectsDirty=false;
 function scheduleProjectSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(saveProjectMilestones,5000);}
 async function saveProjectMilestones(){
   if(!selectedProject||!projectsDirty)return;
